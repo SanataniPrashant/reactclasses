@@ -1,25 +1,20 @@
 import axios from 'axios'
+
  import { useEffect, useState } from 'react'
- import Form from 'react-bootstrap/Form';
+import Insert from './Insert';
  
  function App() {
  const [studata, setStudata] = useState([]);
- const [Input, setInput] = useState("");
+ const [form, setform] = useState(false);
+ const [editdata, seteditdata] = useState({});
  
+ const handleedit=(e)=>{
+  const name = e.target.name;
+  const value = e.target.value;
+  seteditdata((prev) => ({ ...prev, [name]: value }));
+  console.log(editdata);
+ }
  
- const handleInput=(e)=>{
-   const name = e.target.name;
-   const value = e.target.value;
-   setInput((prevInput)=>({...prevInput,[name]:value}));
-   console.log(Input);
- }
- const handleSubmit = (e)=>{
-     e.preventDefault ();
-     axios.post('http://localhost:3000/student',Input)
-     .then(()=>{
-       alert("sent suceessfully") 
-     })
- }
  
  const deletion =(id)=>{
    axios.delete(`http://localhost:3000/student/${id}`)
@@ -27,7 +22,20 @@ import axios from 'axios'
      alert("dfghj")
    })
  
- }
+ };
+
+ const update = (data) => {
+  axios.put(`http://localhost:3000/student/${data.id}`, editdata)
+    .then(() => {
+      alert("Record updated successfully");
+      
+      setform(false);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
  useEffect(
    () => {
      axios.get('http://localhost:3000/student')
@@ -50,6 +58,7 @@ import axios from 'axios'
          <th>marks</th>
          <th>city</th>
          <th>Delete</th>
+         <th>Edit</th>
          </tr>
        </thead>
      {
@@ -64,6 +73,7 @@ import axios from 'axios'
              <td>{item.marks}</td>
              <td>{item.city}</td>
              <td><button onClick={()=>{deletion(item.id)}}>Delete</button></td>
+             <td><button onClick={()=>{setform(true),seteditdata(item)}}>Edit</button></td>
              </tr>
            </tbody>
            </>
@@ -72,34 +82,20 @@ import axios from 'axios'
      }
       </table>
       </div>
+      {
+        form && (
+          <div>
+            <input type="text" value={editdata.name} name='name' onChange={handleedit}/>
+            <input type="text" value={editdata.age} name='age' onChange={handleedit}/>
+            <input type="text" value={editdata.marks} name='marks' onChange={handleedit}/>
+            <input type="text" value={editdata.city} name='city' onChange={handleedit}/>
+            <button onClick={()=>{update(editdata)}}>Update</button>
+            <button onClick={()=>{setform(false)}}>Cancel</button>
+            </div>
+            )
+      }
  
- 
-     <div style={{margin:"auto", width:"500px"}}>
-     <Form >
-       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-         <Form.Label>Enter Name</Form.Label>
-         <Form.Control type="text" name='name' onChange={handleInput} />
-       </Form.Group>
-       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-         <Form.Label>Enter age</Form.Label>
-         <Form.Control type="text"  name='age' onChange={handleInput}/>
-       </Form.Group>
-       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-         <Form.Label>Enter marks</Form.Label>
-         <Form.Control type="text" name='marks' onChange={handleInput}/>
-       </Form.Group>
-       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-         <Form.Label>Enter City</Form.Label>
-         <Form.Control type="text" name='city' onChange={handleInput}/>
-       </Form.Group>
- 
-       <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-         <Form.Label></Form.Label>
-         <Form.Control type="submit"  onClick={handleSubmit}/>
-       </Form.Group>
-       
-     </Form>
-     </div>
+      <Insert/>
      </>
    )
  }
